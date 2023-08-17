@@ -94,7 +94,7 @@ apiRouter.get("/historical-rates", async (req, res) => {
     const results = await collection
       .find(
         { _id: "latest" },
-        { rates: { currency: "USD" } }
+        { currency: 1 }
         // currency: baseCurrency,
         // [targetCurrency]: { $exists: true },
         // rates: { rates: targetCurrency },
