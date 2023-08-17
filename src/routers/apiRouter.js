@@ -18,10 +18,15 @@ apiRouter.get("/rates", async (req, res) => {
     "https://api.coinbase.com/v2/exchange-rates"
   );
   const rates = response.data.data.rates;
+
+  const cryptoResponse = await axios.get(
+    "https://api.coinbase.com/v2/exchange-rates?currency=BTC"
+  );
+  const cryptoRates = cryptoResponse.data.data.rates;
   //   console.log(response.data.data.rates);
   //   res.json(response.data.data.rates);
   const filteredRates =
-    base === "fiat" ? filterFiat(rates) : filterCrypto(rates);
+    base === "fiat" ? filterFiat(rates) : filterCrypto(cryptoRates);
   console.log(filteredRates);
   res.json(filteredRates);
 });
@@ -35,22 +40,34 @@ const filterFiat = (rates) => {
     },
     SGD: {
       BTC: parseFloat((rates.BTC * (rates.USD / rates.SGD)).toPrecision(2)), // do this
-      DOGE: rates.DOGE * (rates.USD / rates.SGD),
-      ETH: rates.ETH * (rates.USD / rates.SGD),
+      DOGE: parseFloat((rates.DOGE * (rates.USD / rates.SGD)).toFixed(2)),
+      ETH: parseFloat((rates.ETH * (rates.USD / rates.SGD)).toPrecision(2)),
     },
     EUR: {
-      BTC: rates.BTC * (rates.USD / rates.EUR),
-      DOGE: rates.DOGE * (rates.USD / rates.EUR),
-      ETH: rates.ETH * (rates.USD / rates.EUR),
+      BTC: parseFloat((rates.BTC * (rates.USD / rates.EUR)).toPrecision(2)),
+      DOGE: parseFloat((rates.DOGE * (rates.USD / rates.EUR)).toFixed(2)),
+      ETH: parseFloat((rates.ETH * (rates.USD / rates.EUR)).toPrecision(2)),
     },
   };
 };
 
 const filterCrypto = (rates) => {
   return {
-    USD: rates.USD,
-    SGD: rates.SGD,
-    EUR: rates.EUR,
+    BTC: {
+      USD: parseFloat(rates.USD).toFixed(2),
+      SGD: parseFloat(rates.SGD).toFixed(2),
+      EUR: parseFloat(rates.EUR).toFixed(2),
+    },
+    DOGE: {
+      USD: parseFloat(rates.USD / rates.DOGE).toPrecision(2),
+      SGD: parseFloat(rates.SGD / rates.DOGE).toPrecision(2),
+      EUR: parseFloat(rates.EUR / rates.DOGE).toPrecision(2),
+    },
+    ETH: {
+      USD: parseFloat(rates.USD / rates.ETH).toFixed(2),
+      SGD: parseFloat(rates.SGD / rates.ETH).toFixed(2),
+      EUR: parseFloat(rates.EUR / rates.ETH).toFixed(2),
+    },
   };
 };
 
