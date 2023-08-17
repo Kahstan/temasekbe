@@ -1,15 +1,21 @@
 const express = require("express");
-const apiRouter = require("./routers/apiRouter"); // Correct path to apiRouter
+const exchangeRateAPI = require("./routers/exchangeRateAPI");
+
 const app = express();
 const port = 5001;
+const connectDB = require("./db/db");
+const uri = "mongodb://localhost:27017/exchangeRatesDB";
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+connectDB(uri);
 
-// Use the API router
-app.use("/api", apiRouter); // Use the apiRouter
+require("./persistentStoreUpdater");
 
-// Start the server
+// #task 1
+app.use("/api", exchangeRateAPI);
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
