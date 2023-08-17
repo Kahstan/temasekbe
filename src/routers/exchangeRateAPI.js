@@ -75,10 +75,10 @@ const filterCrypto = (rates) => {
 
 // historical rates
 apiRouter.get("/historical-rates", async (req, res) => {
-  const baseCurrency = req.params.base_currency;
-  const targetCurrency = req.params.target_currency;
+  const baseCurrency = req.query.base_currency;
+  const targetCurrency = req.query.target_currency;
   const start = parseInt(req.query.start);
-  const end = req.query.end ? parseInt(req.query.end) : Date.now();
+  // const end = req.query.end ? parseInt(req.query.end) : Date.now();
 
   try {
     const client = new MongoClient(uri, {
@@ -87,20 +87,24 @@ apiRouter.get("/historical-rates", async (req, res) => {
     });
 
     await client.connect();
-
+    console.log("historicalRatesAPI connected");
     const db = client.db("exchangeRatesDB");
-    const collection = db.collection("historicalRates");
+    const collection = db.collection("rates");
 
     const results = await collection
-      .find({
-        baseCurrency,
-        targetCurrency,
-        timestamp: {
-          $gte: start,
-          $lte: end,
-        },
-      })
+      .find(
+        { _id: "latest" },
+        { rates: { currency: "USD" } }
+        // currency: baseCurrency,
+        // [targetCurrency]: { $exists: true },
+        // rates: { rates: targetCurrency },
+        // timestamp: {
+        //   $gte: start,
+        // },
+      )
       .toArray();
+    console.log(results);
+
     res.json({ results });
   } catch (error) {
     res
