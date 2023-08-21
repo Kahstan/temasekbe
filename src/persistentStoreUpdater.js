@@ -15,19 +15,16 @@ const updateExchangeRate = async (rates, start, end) => {
     const collection = db.collection("rates");
     console.log("DB connected");
 
-    const updateData = {
-      $set: {
-        rates: rates,
-        timestamp: {
-          start: start,
-          end: end,
-        },
-        currency: rates.currency,
+    const insertData = {
+      rates: rates,
+      timestamp: {
+        start: start,
+        end: end,
       },
+      currency: rates.currency,
     };
 
-    // Upsert the data using _id field "latest"
-    await collection.updateOne({ _id: "latest" }, updateData, { upsert: true });
+    await collection.insertOne(insertData);
   } finally {
     client.close();
   }
@@ -49,4 +46,4 @@ setInterval(async () => {
   } catch (error) {
     console.error("Failed to update exchange rate in the DB:", error);
   }
-}, 6000000); // Update every 10 minutes (600000 milliseconds)
+}, 600000); // Update every 10 minutes (600000 milliseconds)

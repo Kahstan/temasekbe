@@ -75,8 +75,8 @@ const filterCrypto = (rates) => {
 
 // historical rates
 apiRouter.get("/historical-rates", async (req, res) => {
-  const baseCurrency = req.query.base_currency;
-  const targetCurrency = req.query.target_currency;
+  const baseCurrency = req.query.base_currency.toUpperCase();
+  const targetCurrency = req.query.target_currency.toUpperCase();
   const start = parseInt(req.query.start);
   // const end = req.query.end ? parseInt(req.query.end) : Date.now();
 
@@ -87,25 +87,25 @@ apiRouter.get("/historical-rates", async (req, res) => {
     });
 
     await client.connect();
-    console.log("historicalRatesAPI connected");
+    console.log("historicalRatesAPI triggered");
     const db = client.db("exchangeRatesDB");
     const collection = db.collection("rates");
 
-    const results = await collection
-      .find(
-        { _id: "latest" },
-        { currency: 1 }
-        // currency: baseCurrency,
-        // [targetCurrency]: { $exists: true },
-        // rates: { rates: targetCurrency },
-        // timestamp: {
-        //   $gte: start,
-        // },
-      )
-      .toArray();
-    console.log(results);
+    const query = {
+      "timestamp.start": { $gte: start },
+    };
 
-    res.json({ results });
+    const results = await collection.find(query).toArray();
+
+    const formattedResults = results.map((item) => ({
+      timestamp: item.timestamp.start,
+      value:
+        parseFloat(item.rates.rates[targetCurrency]) *
+        parseFloat(item.rates.rates[baseCurrency]),
+    }));
+
+    // console.log(results, baseCurrency, targetCurrency);
+    res.json({ formattedResults });
   } catch (error) {
     res
       .status(500)
