@@ -33,6 +33,7 @@ apiRouter.get("/rates", async (req, res) => {
   }
 });
 
+// filtering fiat rates
 const filterFiat = (rates) => {
   return {
     USD: {
